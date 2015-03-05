@@ -1,4 +1,5 @@
-#ifdef __GNUC__
+ï»¿#ifdef __GNUC__
+//gccã®ãƒãƒ¼ã‚¸ãƒ§ãƒ³ã«ã‚ˆã£ã¦ã¯WINVERãŒã‚„ãŸã‚‰å¤ãdefineã•ã‚Œã¦ã„ã‚‹ã‚‰ã—ãã€getaddrinfoé–¢æ•°ãŒå®šç¾©ã•ã‚Œãªã„ã®ã§XPä»¥é™ã€ã«ã—ã¦ãŠãã€‚0x0601ã§ã‚‚è‰¯ã‹ã£ãŸã‹ã‚‚ãƒ»ãƒ»ãƒ»
 #if !defined( WINVER ) || ( WINVER < 0x0501 )
 #undef  WINVER
 #define WINVER 0x0501
@@ -8,8 +9,8 @@
 #define _WIN32_WINNT 0x0501
 #endif
 #endif //__GNUC__
-#include <winsock2.h>//•K‚¸windows.h‚æ‚èã
 #include <ws2tcpip.h>
+#include <winsock2.h>//å¿…ãšwindows.hã‚ˆã‚Šä¸Š
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -25,24 +26,29 @@
 #ifndef EINVAL
 #define EINVAL 22
 #endif
-#if !defined(_MSC_VER) || _MSC_VER < 1000
+#if (defined(_MSC_VER) && _MSC_VER < 1000) || defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 9))
+//gcc 4.9.2ã¯ã„ãšã‚Œã‚‚å¯¾å¿œã—ã¦ã„ã‚‹?
 #ifndef WINSOCK_VERSION
-#define WINSOCK_VERSION MAKEWORD(2,2)
+#define WINSOCK_VERSION MAKEWORD(2,2)// in gcc 4.9.2, defined at winsock2.h
 #endif
-typedef struct addrinfo ADDRINFOA;
-typedef int errno_t;
-errno_t localtime_s(struct tm *_Tm, const time_t* _Time){//localtimeŠÖ”‚Ì•s‹ï‡C³”ÅAMSVC‚Ìˆø”‚Æ‡‚í‚¹‚Ä‚éB
+typedef struct addrinfo ADDRINFOA;// in gcc 4.9.2, defined at ws2tcpip.h
+typedef int errno_t;// in gcc 4.9.2, defined at stdlib.h
+
+//C11ã§æ¨™æº–åŒ–ã•ã‚Œã¦ã„ã‚‹ãŒã€å®Ÿè£…ã¯ç¾©å‹™ã§ã¯ãªã„é–¢æ•°ã€‚gcc.exe (Rev4, Built by MSYS2 project) 4.9.2ã§ã¯å®Ÿè£…ã•ã‚Œã¦ã„ãŸã€‚mingw32ã®gcc4.8.1ã§ã¯æœªå®Ÿè£…ã€‚
+//ãªãŠ MinGW-w64ã®configureã‚ªãƒ—ã‚·ãƒ§ãƒ³ã«ã€Œ--enable-secure-apiã€ã‚’è¿½åŠ ã—ã¦ã‚‚åˆ©ç”¨ã§ãã‚‹é–¢æ•°ã€‚
+//http://stackoverflow.com/questions/17085603/time-functions-in-mingw
+errno_t localtime_s(struct tm *_Tm, const time_t* _Time){//localtimeé–¢æ•°ã®ä¸å…·åˆä¿®æ­£ç‰ˆã€MSVCã®å¼•æ•°ã¨åˆã‚ã›ã¦ã‚‹ã€‚
 	if(NULL == _Tm || NULL == _Time) return EINVAL;
 	struct tm *temp = localtime(_Time);
 	if (NULL == temp) return EINVAL;
-	*_Tm = *temp;//localtimeŠÖ”‚Í“à•”‚Ìstatic•Ï”‚Ö‚Ìƒ|ƒCƒ“ƒ^[‚ğ•Ô‚·‚Ì‚ÅA•¡”‰ñŒÄ‚Ño‚µ‚·‚é‚Æ‘‚«Š·‚¦‚ç‚ê‚Ä‚µ‚Ü‚¤‚©‚çƒRƒs[
+	*_Tm = *temp;//localtimeé–¢æ•°ã¯å†…éƒ¨ã®staticå¤‰æ•°ã¸ã®ãƒã‚¤ãƒ³ã‚¿ãƒ¼ã‚’è¿”ã™ã®ã§ã€è¤‡æ•°å›å‘¼ã³å‡ºã—ã™ã‚‹ã¨æ›¸ãæ›ãˆã‚‰ã‚Œã¦ã—ã¾ã†ã‹ã‚‰ã‚³ãƒ”ãƒ¼
 	return 0;
 }
-errno_t gmtime_s(struct tm *_Tm, const time_t* _Time){//localtimeŠÖ”‚Ì•s‹ï‡C³”ÅAMSVC‚Ìˆø”‚Æ‡‚í‚¹‚Ä‚éB
+errno_t gmtime_s(struct tm *_Tm, const time_t* _Time){//localtimeé–¢æ•°ã®ä¸å…·åˆä¿®æ­£ç‰ˆã€MSVCã®å¼•æ•°ã¨åˆã‚ã›ã¦ã‚‹ã€‚
 	if (NULL == _Tm || NULL == _Time) return EINVAL;
 	struct tm *temp = gmtime(_Time);
 	if (NULL == temp) return EINVAL;
-	*_Tm = *temp;//localtimeŠÖ”‚Í“à•”‚Ìstatic•Ï”‚Ö‚Ìƒ|ƒCƒ“ƒ^[‚ğ•Ô‚·‚Ì‚ÅA•¡”‰ñŒÄ‚Ño‚µ‚·‚é‚Æ‘‚«Š·‚¦‚ç‚ê‚Ä‚µ‚Ü‚¤‚©‚çƒRƒs[
+	*_Tm = *temp;//localtimeé–¢æ•°ã¯å†…éƒ¨ã®staticå¤‰æ•°ã¸ã®ãƒã‚¤ãƒ³ã‚¿ãƒ¼ã‚’è¿”ã™ã®ã§ã€è¤‡æ•°å›å‘¼ã³å‡ºã—ã™ã‚‹ã¨æ›¸ãæ›ãˆã‚‰ã‚Œã¦ã—ã¾ã†ã‹ã‚‰ã‚³ãƒ”ãƒ¼
 	return 0;
 }
 #endif
@@ -50,21 +56,21 @@ errno_t gmtime_s(struct tm *_Tm, const time_t* _Time){//localtimeŠÖ”‚Ì•s‹ï‡C
 #pragma comment(lib, "ws2_32.lib")
 #pragma comment(lib, "winmm.lib")//timeBeginPeriod,timeEndPeriod
 #endif
-typedef struct NTP_Packet {// NTPƒpƒPƒbƒg\‘¢‘Ì [RFC : 2030]
+typedef struct NTP_Packet {// NTPãƒ‘ã‚±ãƒƒãƒˆæ§‹é€ ä½“ [RFC : 2030]
 	int32_t Control_Word;
-	int32_t root_delay;                    // ƒ‹[ƒg’x‰„
-	int32_t root_dispersion;               // ƒ‹[ƒg•ªU
-	int32_t reference_identifier;          // Šî€ID
-	int64_t reference_timestamp;       // Šî€ƒ^ƒCƒ€ƒXƒ^ƒ“ƒv
-	int64_t originate_timestamp;       // Šî“_ƒ^ƒCƒ€ƒXƒ^ƒ“ƒv
-	int64_t receive_timestamp;         // óMƒ^ƒCƒ€ƒXƒ^ƒ“ƒv
-	uint32_t transmit_timestamp_seconds;    // ‘—Mƒ^ƒCƒ€ƒXƒ^ƒ“ƒv
-	uint32_t transmit_timestamp_fractions;  // ‘—Mƒ^ƒCƒ€ƒXƒ^ƒ“ƒv
+	int32_t root_delay;                    // ãƒ«ãƒ¼ãƒˆé…å»¶
+	int32_t root_dispersion;               // ãƒ«ãƒ¼ãƒˆåˆ†æ•£
+	int32_t reference_identifier;          // åŸºæº–ID
+	int64_t reference_timestamp;       // åŸºæº–ã‚¿ã‚¤ãƒ ã‚¹ã‚¿ãƒ³ãƒ—
+	int64_t originate_timestamp;       // åŸºç‚¹ã‚¿ã‚¤ãƒ ã‚¹ã‚¿ãƒ³ãƒ—
+	int64_t receive_timestamp;         // å—ä¿¡ã‚¿ã‚¤ãƒ ã‚¹ã‚¿ãƒ³ãƒ—
+	uint32_t transmit_timestamp_seconds;    // é€ä¿¡ã‚¿ã‚¤ãƒ ã‚¹ã‚¿ãƒ³ãƒ—
+	uint32_t transmit_timestamp_fractions;  // é€ä¿¡ã‚¿ã‚¤ãƒ ã‚¹ã‚¿ãƒ³ãƒ—
 }NTP_Packet;
 int get_integer_num(const int max, const int min){
-	//‹@”\F•W€“ü—Í‚ğ”š‚É•ÏŠ·‚·‚éB
-	//ˆø”F–ß‚è’l‚ÌÅ‘å’l,–ß‚è’l‚ÌÅ¬’l
-	//–ß‚è’lF“ü—Í‚µ‚½”šAƒGƒ‰[‚Í-1
+	//æ©Ÿèƒ½ï¼šæ¨™æº–å…¥åŠ›ã‚’æ•°å­—ã«å¤‰æ›ã™ã‚‹ã€‚
+	//å¼•æ•°ï¼šæˆ»ã‚Šå€¤ã®æœ€å¤§å€¤,æˆ»ã‚Šå€¤ã®æœ€å°å€¤
+	//æˆ»ã‚Šå€¤ï¼šå…¥åŠ›ã—ãŸæ•°å­—ã€ã‚¨ãƒ©ãƒ¼æ™‚ã¯-1
 	char s[100];
 	long t;
 	char *endptr;
@@ -131,27 +137,27 @@ bool ToLocalStruct_tm(struct tm* _Tm){
 }
 bool print_local_time(struct tm const* pnow, bool print_ymd){
 	if (NULL == pnow) return false;
-	static const char week[][7] = { "“ú", "Œ", "‰Î", "…", "–Ø", "‹à", "“y" };
+	static const char week[][7] = { "æ—¥", "æœˆ", "ç«", "æ°´", "æœ¨", "é‡‘", "åœŸ" };
 	if (print_ymd){
-		printf("¡“ú‚Í%2d”N%02dŒ%02d“ú(%s)", pnow->tm_year + 1900, pnow->tm_mon + 1, pnow->tm_mday, week[pnow->tm_wday]);
+		printf("ä»Šæ—¥ã¯%2då¹´%02dæœˆ%02dæ—¥(%s)", pnow->tm_year + 1900, pnow->tm_mon + 1, pnow->tm_mday, week[pnow->tm_wday]);
 	}
-	printf("%2d:%02d:%02d\n‚Å‚·B\n", pnow->tm_hour, pnow->tm_min, pnow->tm_sec);
+	printf("%2d:%02d:%02d\nã§ã™ã€‚\n", pnow->tm_hour, pnow->tm_min, pnow->tm_sec);
 	return true;
 }
 bool Connect_Server_and_Convert(SYSTEMTIME *lpSystemTime, SOCKET sock, NTP_Packet* packet, struct timeval* lpwaitTime, fd_set* fds, uint32_t* delay_time){
 	const clock_t connection_begin = clock();
-	// ‘—M
+	// é€ä¿¡
 	if (SOCKET_ERROR == send(sock, (const char *)(packet), sizeof(NTP_Packet), 0))
 		return false;
-	// óM‘Ò‚¿
+	// å—ä¿¡å¾…ã¡
 	if (select(0, fds, NULL, NULL, (PTIMEVAL)lpwaitTime) <= 0)//@mavericktse:need explicit cast?
 		return false;
-	// óM
+	// å—ä¿¡
 	int recvLen = recv(sock, (char*)(packet), sizeof(NTP_Packet), 0);
 	const clock_t connection_end = clock();
 	if (SOCKET_ERROR == recvLen || 0 == recvLen || sizeof(NTP_Packet) != recvLen) return false;
 	*delay_time = (uint32_t)((connection_end - connection_begin) / (clock_t)(CLOCKS_PER_SEC * 2));
-	// ŒÅ’è¬”“_”‚ğ•‚“®¬”“_”‚Ö•ÏŠ·
+	// å›ºå®šå°æ•°ç‚¹æ•°ã‚’æµ®å‹•å°æ•°ç‚¹æ•°ã¸å¤‰æ›
 	unsigned int f = ntohl(packet->transmit_timestamp_fractions);
 	double frac = 0.0f, d = 0.5f;
 	int i;
@@ -160,12 +166,12 @@ bool Connect_Server_and_Convert(SYSTEMTIME *lpSystemTime, SOCKET sock, NTP_Packe
 
 	FILETIME ft;
 
-	// 100ƒiƒm•b’PˆÊ‚Ö•ÏŠ·A1900”N`‚ğ1601”N`‚Ö•ÏŠ·
+	// 100ãƒŠãƒç§’å˜ä½ã¸å¤‰æ›ã€1900å¹´ï½ã‚’1601å¹´ï½ã¸å¤‰æ›
 	*(uint64_t*)(&ft) =
 		UInt32x32To64(ntohl(packet->transmit_timestamp_seconds), 10000000U) +
 		(uint64_t)(frac * 10000000U) + 94354848000000000U;
 
-	// FILETIME\‘¢‘Ì‚©‚çSYSTEMTIME\‘¢‘Ì‚Ö•ÏŠ·
+	// FILETIMEæ§‹é€ ä½“ã‹ã‚‰SYSTEMTIMEæ§‹é€ ä½“ã¸å¤‰æ›
 	if (0 == FileTimeToSystemTime(&ft, lpSystemTime)) return false;
 	return true;
 }
@@ -174,26 +180,26 @@ bool GetNtpTime2(SYSTEMTIME *lpSystemTime, ADDRINFOA* res_ai, struct timeval* lp
 	SOCKET sock = INVALID_SOCKET;
 	fd_set fds;
 	for (res = res_ai; res != NULL; res = res->ai_next){
-		sock = socket(res->ai_family, res->ai_socktype, res->ai_protocol);// ƒ\ƒPƒbƒgì¬
+		sock = socket(res->ai_family, res->ai_socktype, res->ai_protocol);// ã‚½ã‚±ãƒƒãƒˆä½œæˆ
 		if (INVALID_SOCKET != sock){
-			if (0 == connect(sock, res->ai_addr, (int)(res->ai_addrlen))) break;// Ú‘±
+			if (0 == connect(sock, res->ai_addr, (int)(res->ai_addrlen))) break;// æ¥ç¶š
 			closesocket(sock);
 			sock = INVALID_SOCKET;
 		}
 	}
-	freeaddrinfo(res_ai);// addrinfo ‚ğ”jŠü
+	freeaddrinfo(res_ai);// addrinfo ã‚’ç ´æ£„
 	if (INVALID_SOCKET == sock) return false;
 
-	// ƒtƒ@ƒCƒ‹ƒfƒBƒXƒNƒŠƒvƒ^‚ğ‰Šú‰»
+	// ãƒ•ã‚¡ã‚¤ãƒ«ãƒ‡ã‚£ã‚¹ã‚¯ãƒªãƒ—ã‚¿ã‚’åˆæœŸåŒ–
 	FD_ZERO(&fds);
 	FD_SET(sock, &fds);
 
-	// ‘—Mƒf[ƒ^ì¬
+	// é€ä¿¡ãƒ‡ãƒ¼ã‚¿ä½œæˆ
 	NTP_Packet packet;//@mavericktse:removed {0}. Suppose to have a default constructor
 	packet.Control_Word = htonl(0x0B000000);
 
 	const bool errno_ = Connect_Server_and_Convert(lpSystemTime, sock, &packet, lpwaitTime, &fds, delay_time);
-	// Ø’f
+	// åˆ‡æ–­
 	shutdown(sock, SD_BOTH);
 	closesocket(sock);
 
@@ -203,18 +209,18 @@ bool GetNTPTime(struct tm* tm_date, const char* lpNtpServer, uint32_t timeout){
 	if (NULL == tm_date || NULL == lpNtpServer) return false;
 	SYSTEMTIME SystemTime;
 	uint32_t delay_time = 0;
-	WSADATA wsaData;// ƒ\ƒPƒbƒg‰Šú‰»•Ï”
-	// WinSock‰Šú‰»
+	WSADATA wsaData;// ã‚½ã‚±ãƒƒãƒˆåˆæœŸåŒ–å¤‰æ•°
+	// WinSockåˆæœŸåŒ–
 	if (0 != WSAStartup(WINSOCK_VERSION, &wsaData)) return false;
 	ADDRINFOA ai, *res_ai;
 	memset(&ai, 0, sizeof(ADDRINFOA));
 	ai.ai_socktype = SOCK_DGRAM;
 	ai.ai_family = PF_UNSPEC;
 	bool errno_ = true;
-	if (0 == getaddrinfo(lpNtpServer, "ntp", &ai, &res_ai)){// ƒAƒhƒŒƒX‚ÆƒT[ƒrƒX‚ğ•ÏŠ·
+	if (0 == getaddrinfo(lpNtpServer, "ntp", &ai, &res_ai)){// ã‚¢ãƒ‰ãƒ¬ã‚¹ã¨ã‚µãƒ¼ãƒ“ã‚¹ã‚’å¤‰æ›
 		struct timeval waitTime, *lpwaitTime = NULL;
 		if (timeout != INFINITE){
-			// ƒ^ƒCƒ€ƒAƒEƒg‚ğİ’è
+			// ã‚¿ã‚¤ãƒ ã‚¢ã‚¦ãƒˆã‚’è¨­å®š
 			waitTime.tv_sec = timeout / 1000;
 			waitTime.tv_usec = (timeout % 1000) * 1000;
 			lpwaitTime = &waitTime;
@@ -270,53 +276,53 @@ bool proofreading_client_time(struct tm *pnow, struct tm const*delay){
 	return true;
 }
 int main(void){
-	//int n, nO = -1; // ƒL[”Ô†
+	//int n, nO = -1; // ã‚­ãƒ¼ç•ªå·
 	//FILE *file;
-	time_t now = time(NULL);//ÀsPC‚ÌŒ»İ
+	time_t now = time(NULL);//å®Ÿè¡ŒPCã®ç¾åœ¨æ™‚åˆ»
 	struct tm pnow, pnow_npt, delay = { 0 };
 	if (0 != localtime_s(&pnow, &now)) return -1;
-	if (false == GetNTPTime(&pnow_npt, "ntp.nict.jp", 10000)) return -1;//nptƒT[ƒo[‚ÌŒ»İ
+	if (false == GetNTPTime(&pnow_npt, "ntp.nict.jp", 10000)) return -1;//nptã‚µãƒ¼ãƒãƒ¼ã®ç¾åœ¨æ™‚åˆ»
 	const clock_t loop_begin = clock();
-	calc_delay_betwin_npt_and_client(&delay, &pnow, &pnow_npt);//nptƒT[ƒo[‚ÆƒNƒ‰ƒCƒAƒ“ƒg‚Æ‚Ì·‚ğŒvZB
+	calc_delay_betwin_npt_and_client(&delay, &pnow, &pnow_npt);//nptã‚µãƒ¼ãƒãƒ¼ã¨ã‚¯ãƒ©ã‚¤ã‚¢ãƒ³ãƒˆã¨ã®æ™‚å·®ã‚’è¨ˆç®—ã€‚
 	print_local_time(&pnow, true);
 	print_local_time(&pnow_npt, true);
-	printf("ƒ^ƒCƒ}[‚ğ‹N“®‚µ‚Ü‚·B\n"
-		"‚²Šó–]‚Ì‚ğ“ü—Í‚µAEnterƒL[‚ğ“ü—Í‚µ‚Ä‚­‚¾‚³‚¢B\n");
-	puts("‰½");
+	printf("ã‚¿ã‚¤ãƒãƒ¼ã‚’èµ·å‹•ã—ã¾ã™ã€‚\n"
+		"ã”å¸Œæœ›ã®æ™‚åˆ»ã‚’å…¥åŠ›ã—ã€Enterã‚­ãƒ¼ã‚’å…¥åŠ›ã—ã¦ãã ã•ã„ã€‚\n");
+	puts("ä½•æ™‚");
 	const int timer_end_hour = get_integer_num_with_loop(24, 0);
-	puts("‰½•ª");
+	puts("ä½•åˆ†");
 	const int timer_end_min = get_integer_num_with_loop(59, 0);
-	puts("‰½•b");
+	puts("ä½•ç§’");
 	const int timer_end_sec = get_integer_num_with_loop(59, 0);
 	const clock_t duration = ((diff_hour(timer_end_hour, pnow_npt.tm_hour) * 24
 		+ diff_min(timer_end_min, pnow_npt.tm_min)) * 60 + diff_sec(timer_end_sec, pnow_npt.tm_sec)) * CLOCKS_PER_SEC;
 	system("cls");
-	puts("ƒ^ƒCƒ}[”­“®!!");
-	timeBeginPeriod(1);// ƒ^ƒCƒ}[‚ÌÅ¬¸“x‚ğ1msec‚É‚·‚é
+	puts("ã‚¿ã‚¤ãƒãƒ¼ç™ºå‹•!!");
+	timeBeginPeriod(1);// ã‚¿ã‚¤ãƒãƒ¼ã®æœ€å°ç²¾åº¦ã‚’1msecã«ã™ã‚‹
 	while (clock() - loop_begin <= duration){
 		clock_t turn_begin = clock();
-		Beep(30000, (DWORD)CLOCKS_PER_SEC * 4 / 20);//ƒŒ”
+		Beep(30000, (DWORD)CLOCKS_PER_SEC * 4 / 20);//ãƒ¬ï¼ƒ
 
 		time_t curTime = time(NULL);
 		struct tm pcurTime;
 		if(0 != localtime_s(&pcurTime, &curTime)) return -1;
-		proofreading_client_time(&pcurTime, &delay);//nptƒT[ƒo[‚ÆƒNƒ‰ƒCƒAƒ“ƒg‚Æ‚Ì·‚ğ•â³
+		proofreading_client_time(&pcurTime, &delay);//nptã‚µãƒ¼ãƒãƒ¼ã¨ã‚¯ãƒ©ã‚¤ã‚¢ãƒ³ãƒˆã¨ã®æ™‚å·®ã‚’è£œæ­£
 		print_local_time(&pcurTime, false);
-		printf("I—¹F%d:%02d:%02d\n", timer_end_hour, timer_end_min, timer_end_sec);
-		printf("Œo‰ßŠÔF%d•b\n", (clock() - loop_begin) / CLOCKS_PER_SEC);
-		printf("c‚èŠÔF%d•b\n", (duration - (clock() - loop_begin)) / CLOCKS_PER_SEC);
-		Sleep((DWORD)CLOCKS_PER_SEC * 3 / 5);//“K“–‚É
-		while ((clock() - turn_begin) < CLOCKS_PER_SEC);//ˆê•b‚²‚Æ‚Éƒ‹[ƒv‚ª‰ñ‚é‚æ‚¤‚É
-		//printf("’â~‚·‚é‚É‚ÍCtrl+CƒL[‚ğ‰Ÿ‚µ‚Ä‚­‚¾‚³‚¢B");
+		printf("çµ‚äº†æ™‚åˆ»ï¼š%d:%02d:%02d\n", timer_end_hour, timer_end_min, timer_end_sec);
+		printf("çµŒéæ™‚é–“ï¼š%ldç§’\n", (clock() - loop_begin) / CLOCKS_PER_SEC);
+		printf("æ®‹ã‚Šæ™‚é–“ï¼š%ldç§’\n", (duration - (clock() - loop_begin)) / CLOCKS_PER_SEC);
+		Sleep((DWORD)CLOCKS_PER_SEC * 3 / 5);//é©å½“ã«
+		while ((clock() - turn_begin) < CLOCKS_PER_SEC);//ä¸€ç§’ã”ã¨ã«ãƒ«ãƒ¼ãƒ—ãŒå›ã‚‹ã‚ˆã†ã«
+		//printf("åœæ­¢ã™ã‚‹ã«ã¯Ctrl+Cã‚­ãƒ¼ã‚’æŠ¼ã—ã¦ãã ã•ã„ã€‚");
 		system("cls");
 	}
 	Beep(3000, 3000);
-	timeEndPeriod(1);// ƒ^ƒCƒ}[‚ÌÅ¬¸“x‚ğ–ß‚·
+	timeEndPeriod(1);// ã‚¿ã‚¤ãƒãƒ¼ã®æœ€å°ç²¾åº¦ã‚’æˆ»ã™
 	/*file = fopen("pre-time.txt", "a+");
 	fprintf(file, "h: %d m: %d", h, m);
 	fscanf(file, "%d:%d", &h, &m);
 	fclose(file);
-	printf("‰ß‹‚Ì—š—ğ@1@%d:%d\n", h, m);*/
+	printf("éå»ã®å±¥æ­´ã€€1ã€€%d:%d\n", h, m);*/
 
 	return 0;
 }
