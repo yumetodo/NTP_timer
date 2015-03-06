@@ -8,6 +8,9 @@
 #undef  _WIN32_WINNT
 #define _WIN32_WINNT 0x0501
 #endif
+#ifdef __cplusplus
+#define __STDC_LIMIT_MACROS
+#endif
 #endif //__GNUC__
 #include <ws2tcpip.h>
 #include <winsock2.h>//必ずwindows.hより上

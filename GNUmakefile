@@ -15,7 +15,7 @@ CXX_DEBUG_FLAGS		=	-g -O0
 CXX_RELEASE_FLAGS	=	-O2
 
 # 基本オプション
-CPPFLAGS = --input-charset=utf-8 -fexec-charset=CP932 -Wall -std=gnu11 -lws2_32 -lwinmm -lwsock32
+CPPFLAGS = --input-charset=utf-8 -fexec-charset=CP932 -Wall -std=c++11 -lws2_32 -lwinmm -lwsock32
 
 # make
 # debug
