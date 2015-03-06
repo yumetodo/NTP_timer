@@ -26,7 +26,7 @@
 #ifndef EINVAL
 #define EINVAL 22
 #endif
-#if (defined(_MSC_VER) && _MSC_VER < 1000) || defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 9))
+#if (defined(_MSC_VER) && _MSC_VER < 1000) || (defined(__GNUC__) && (__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 9)))
 //gcc 4.9.2はいずれも対応している?
 #ifndef WINSOCK_VERSION
 #define WINSOCK_VERSION MAKEWORD(2,2)// in gcc 4.9.2, defined at winsock2.h
@@ -164,12 +164,14 @@ bool Connect_Server_and_Convert(SYSTEMTIME *lpSystemTime, SOCKET sock, NTP_Packe
 	for (i = sizeof(unsigned int) * 8 - 1; i >= 0; --i, d /= 2.0f)
 		if (f & (1 << i)) frac += d;
 
-	FILETIME ft;
 
 	// 100ナノ秒単位へ変換、1900年～を1601年～へ変換
-	*(uint64_t*)(&ft) =
+	uint64_t temp =
 		UInt32x32To64(ntohl(packet->transmit_timestamp_seconds), 10000000U) +
 		(uint64_t)(frac * 10000000U) + 94354848000000000U;
+	FILETIME ft;
+	ft.dwHighDateTime = (DWORD)(temp >> 32);
+	ft.dwLowDateTime = (DWORD)(((uint64_t)UINT32_MAX) & temp);
 
 	// FILETIME構造体からSYSTEMTIME構造体へ変換
 	if (0 == FileTimeToSystemTime(&ft, lpSystemTime)) return false;
